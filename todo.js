@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // initializing data from localStorage
   const todos = JSON.parse(localStorage.getItem("todos")) || [];
+  let editIndex = null;
 
   // rendering todos in html
   function renderTodos() {
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <!-- actions -->
                     <div class="todo-actions">
                         <button onclick="editTodo(${index})" type="button" class="btn btn-edit"><i class="bi bi-pencil"></i> Edit</button>
-                        <button onclick="deleteTodo(${index})" type="button" class="btn btn-delete"><i class="bi bi-trash"></i> Delete</button>
+                        <button onclick="confirmDelete(${index})" type="button" class="btn btn-delete"><i class="bi bi-trash"></i> Delete</button>
                     </div>
                 </div> `
       )
@@ -29,40 +30,58 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderTodos();
 
-  // add items to localStorage
-  function addTodo() {
+  // add or update todo items
+  function handleTodo() {
     const title = todoTitle.value.trim();
     const description = todoDesc.value.trim();
     if (title) {
-      todos.push({
-        title,
-        description,
-      });
+      if (editIndex !== null) {
+        todos[editIndex] = { title, description };
+        editIndex = null;
+      } else {
+        todos.push({ title, description });
+      }
       todoTitle.value = "";
       todoDesc.value = "";
     }
     renderTodos();
-    // save items to localStorge
     localStorage.setItem("todos", JSON.stringify(todos));
+    location.reload();
   }
 
+  // delete confirmation with SweetAlert2
+  window.confirmDelete = (todoIndex) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteTodo(todoIndex);
+        Swal.fire("Deleted!", "Your todo has been deleted.", "success");
+      }
+    });
+  };
+
   // delete todo items
-  window.deleteTodo = (todoIndex) => {
+  function deleteTodo(todoIndex) {
     todos.splice(todoIndex, 1);
     renderTodos();
-    // Add this line to update localStorage after deletion
     localStorage.setItem("todos", JSON.stringify(todos));
-  };
+  }
 
   // edit todo items
   window.editTodo = (todoIndex) => {
     const todoToEdit = todos[todoIndex];
     todoTitle.value = todoToEdit.title || "";
     todoDesc.value = todoToEdit.description || "";
-    todos.splice(todoIndex, 1);
-    renderTodos();
-    // Add this line to update localStorage after editing
-    localStorage.setItem("todos", JSON.stringify(todos));
+    editIndex = todoIndex;
+    addBtn.textContent = "Update";
   };
-  addBtn.addEventListener("click", addTodo);
+
+  addBtn.addEventListener("click", handleTodo);
 });
