@@ -47,7 +47,7 @@ body {
 
 .header h1 {
   font-size: 1.8rem;
-  text-transform: uppercase;
+  text-transform: capitalize;
   color: #ffa509;
   display: flex;
   align-items: center;
@@ -62,7 +62,7 @@ body {
 .header h2 {
   color: #fff;
   font-size: 1.5rem;
-  text-transform: uppercase;
+  text-transform: capitalize;
 }
 
 .btn {
@@ -112,7 +112,7 @@ textarea:focus {
 
 input::placeholder,
 textarea::placeholder {
-  text-transform: uppercase;
+  text-transform: capitalize;
   color: rgb(197, 197, 164);
 }
 
@@ -198,4 +198,48 @@ textarea::placeholder {
     height: auto;
     position: static;
   }
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.tab-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.tab-btn.active {
+  background-color: #ffa509;
+  color: #050b2c;
+}
+
+.status-completed {
+  background-color: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  margin-bottom: 5px;
+}
+
+/* Ajustement pour les boutons existants */
+.btn-complete {
+  background-color: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+}
+
+.btn-complete:hover {
+  background-color: rgba(0, 255, 0, 0.4);
 }

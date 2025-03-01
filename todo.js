@@ -1,55 +1,83 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // get all elements
+  // Get all elements
   const todoTitle = document.getElementById("todoTitle");
   const todoDesc = document.getElementById("todoDesc");
   const addBtn = document.getElementById("addBtn");
   const todoList = document.getElementById("todoList");
+  const tabButtons = document.querySelectorAll(".tab-btn");
 
-  // initializing data from localStorage
+  // Initializing data from localStorage
   const todos = JSON.parse(localStorage.getItem("todos")) || [];
   let editIndex = null;
+  let currentTab = "pending"; // Default tab
 
-  // rendering todos in html
+  // Rendering todos in HTML based on current tab
   function renderTodos() {
-    todoList.innerHTML = todos
+    const filteredTodos = todos.filter((todo) => todo.status === currentTab);
+    todoList.innerHTML = filteredTodos
       .map(
-        (todo, index) => ` <div class="card todo-item">
-                    <div class="todo-content">
-                        <h3>${todo.title}</h3>
-                        <p>${todo.description}</p>
-                        <span class="status status-pending">Pending</span>
-                    </div>
-                    <!-- actions -->
-                    <div class="todo-actions">
-                        <button onclick="editTodo(${index})" type="button" class="btn btn-edit"><i class="bi bi-pencil"></i> Edit</button>
-                        <button onclick="confirmDelete(${index})" type="button" class="btn btn-delete"><i class="bi bi-trash"></i> Delete</button>
-                    </div>
-                </div> `
+        (todo, index) => ` 
+          <div class="card todo-item">
+            <div class="todo-content">
+              <h3>${todo.title}</h3>
+              <p>${todo.description}</p>
+              <span class="status status-${todo.status}">${
+          todo.status === "pending" ? "Pending" : "Completed"
+        }</span>
+            </div>
+            <!-- actions -->
+            <div class="todo-actions">
+              ${
+                todo.status === "pending"
+                  ? `<button onclick="completeTodo(${todos.indexOf(
+                      todo
+                    )})" type="button" class="btn btn-complete"><i class="bi bi-check-lg"></i> Complete</button>
+                     <button onclick="editTodo(${todos.indexOf(
+                       todo
+                     )})" type="button" class="btn btn-edit"><i class="bi bi-pencil"></i> Edit</button>`
+                  : ""
+              }
+              <button onclick="confirmDelete(${todos.indexOf(
+                todo
+              )})" type="button" class="btn btn-delete"><i class="bi bi-trash"></i> Delete</button>
+            </div>
+          </div> `
       )
       .join("");
   }
   renderTodos();
 
-  // add or update todo items
+  // Add or update todo items
   function handleTodo() {
     const title = todoTitle.value.trim();
     const description = todoDesc.value.trim();
     if (title) {
       if (editIndex !== null) {
-        todos[editIndex] = { title, description };
+        todos[editIndex] = {
+          title,
+          description,
+          status: todos[editIndex].status,
+        };
         editIndex = null;
+        addBtn.textContent = "Create Task";
       } else {
-        todos.push({ title, description });
+        todos.push({ title, description, status: "pending" });
       }
       todoTitle.value = "";
       todoDesc.value = "";
+      localStorage.setItem("todos", JSON.stringify(todos));
+      renderTodos();
     }
-    renderTodos();
-    localStorage.setItem("todos", JSON.stringify(todos));
-    location.reload();
   }
 
-  // delete confirmation with SweetAlert2
+  // Mark todo as completed
+  window.completeTodo = (todoIndex) => {
+    todos[todoIndex].status = "completed";
+    localStorage.setItem("todos", JSON.stringify(todos));
+    renderTodos();
+  };
+
+  // Delete confirmation with SweetAlert2
   window.confirmDelete = (todoIndex) => {
     Swal.fire({
       title: "Are you sure?",
@@ -67,14 +95,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // delete todo items
+  // Delete todo items
   function deleteTodo(todoIndex) {
     todos.splice(todoIndex, 1);
-    renderTodos();
     localStorage.setItem("todos", JSON.stringify(todos));
+    renderTodos();
   }
 
-  // edit todo items
+  // Edit todo items
   window.editTodo = (todoIndex) => {
     const todoToEdit = todos[todoIndex];
     todoTitle.value = todoToEdit.title || "";
@@ -82,6 +110,16 @@ document.addEventListener("DOMContentLoaded", () => {
     editIndex = todoIndex;
     addBtn.textContent = "Update";
   };
+
+  // Tab switching
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      tabButtons.forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+      currentTab = button.getAttribute("data-tab");
+      renderTodos();
+    });
+  });
 
   addBtn.addEventListener("click", handleTodo);
 });
